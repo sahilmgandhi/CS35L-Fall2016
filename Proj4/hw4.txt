@@ -1,0 +1,115 @@
+Sahil Gandhi
+10/20/2016
+ID: 704-598-105
+TA: Thuy Vu - Monday/Wednesday 4-6 PM
+
+1) Touch hw4.txt
+
+2) I used "cd diffutls-3.0" to go into the directory where I had the v3.0 
+checked out, and then I used the command "git checkout v3.0" to make sure I 
+checked out the right one. Then I used the command "git branch quote" to 
+create a new branch for the homework assignment. I then used the command 
+"git checkout quote" to checkout this new branch to use.
+
+3) I ran the command, "patch -p1 < quote-3.0-patch.txt" to patch this new 
+branch. For every file that was being patched, it asked me, "Reversed or 
+previously applied patch detected! Assume -R [n]". I replied y to all of 
+these (this meant that patch would try to revert the old patches). Then I 
+ran the command again "patch -p1 < quote-3.0-patch.txt" and got the files to 
+properly patch.
+
+4) I learned about the Emacs "C-x 4 a" by reading about it on the interwebs.
+This command is used to create a new entry in the change log for a file. 
+
+5) I changed 6 different files (the .c files), so I wrote a small 
+description of which files were changed, and what I did for each file. This 
+was the content of my file:
+
+2016-10-21  Sahil Manoj Gandhi  <gandhi@lnxsrv07.seas.ucla.edu>
+
+        * src/cmp.c - Changed ascii grave to apostrophe in comments.
+        * src/diff.c - Changed ascii grave to apostrope in comments.
+        * src/diff3.c - Changed ascii grave to apostrophe in comments.
+        * src/dir.c - Changed ascii grave to apostrophe in comments.
+        * src/diff.c - Changed ascii grave to apostrophe in comments.
+        * src/util.c - Changed ascii grave to apostrophe in comments.
+
+6) I added the files to my workspace by doing "git add ." and then doing 
+"git commit -F ChangeLog" to commit my changes with the ChangeLog as my 
+commit message. I could check that my commit actually worked by typing "git 
+log" and it showed my most recent commit as being:
+
+commit 5e7419b4368b103258cc206d929d6709296e92c4
+Author: Sahil Manoj Gandhi <gandhi@lnxsrv02.seas.ucla.edu>
+Date:   Fri Oct 21 17:46:44 2016 -0700
+
+    2016-10-21  Sahil Manoj Gandhi  <gandhi@lnxsrv02.seas.ucla.edu>
+
+        * src/cmp.c - Changed ascii grave to apostrophe in comments.
+        * src/diff.c - Changed ascii grave to apostrope in comments.
+        * src/diff3.c - Changed ascii grave to apostrophe in comments.
+        * src/dir.c - Changed ascii grave to apostrophe in comments.
+        * src/diff.c - Changed ascii grave to apostrophe in comments.
+        * src/util.c - Changed ascii grave to apostrophe in comments.
+
+7) I used the command "git format-patch -1 --stdout HEAD > 
+formatted-patch.txt". I used "wc -l formatted-patch.txt" to see the amount 
+of lines it contains, and it was 656 lines. 
+
+8) I checked out v3.0 by running "git checkout v3.0" and then made a new 
+temporary branch called "partner" by running "git checkout -b partner". Now 
+I copied over my friend's file () to my system and then used the command 
+"git am < formatted-patch.txt" to see if it worked. The output of that 
+command was as followed:
+
+git am < formatted-patch1.txt
+Applying: 2016-10-21 Jonathan Michael Zaturensky <
+zaturens@lnxsrv09.seas.ucla.edu>
+
+I then invoked the following commands:
+./boostrap
+./configure
+./make
+./make check
+
+Now I used the following comppands to check whether his patch actually works:
+
+src/diff . - -> this outputted the correct use of '-' rather than `-'
+src/diff --help -> this also outputted the correct use of 'FILE1 FILE2' 
+rather than `FILE1 FILE2'
+
+9) I ran the command "make distdir" and after it ran for 20 seconds, I ran 
+the command "cd diffutils-3.0.1-e5d4". Now I opened up the changelog here, 
+and as expected the first few lines said the following:
+
+2016-10-21  Jonathan Michael Zaturensky  <zaturens@lnxsrv09.seas.ucla.edu>
+
+        2016-10-21 Jonathan Michael Zaturensky <zaturens7
+        @lnxsrv09.seas.ucla.edu>
+                * src/util.c: Replaced all ` with ', excepted in commented 
+                sections.
+                * src/sdiff.c: Replaced all ` with ', excepted in commented 
+                sections.
+                * src/dir.c: Replaced all ` with ', excepted in commented 
+                sections.
+                * src/diff3.c: Replaced all ` with ', excepted in commented 
+                sections.
+                * src/diff.c: Replaced all ` with ', excepted in commented 
+                sections.
+                * src/cmp.c: Replaced all ` with ', excepted in commented 
+                sections.
+
+This is exactly what I expected, since the changelog should show the 
+Jonathan's most recent changes (that was the patch that we applied).
+
+I also had another partner, Adit Deshpande, and I repeated steps 8 and 9 
+with his patch. I saw similar results and can confirm that his patch works 
+as well. I gave my formatted-patch.txt files to both Adit and Jonathan so 
+they could verify on their machines.
+
+10) To get gitk to work on my windows machine, I first installed Xming to 
+host an X server on my local machine. I then used the X11 form of putty to 
+ssh into the lnxsrv02 and was able to go to the directory: "~eggert/src/gnu/
+emacs" and execute the commmand "/usr/local/cs/bin/gitk". This appropiately 
+opened up the gui that was needed, and I was able to answer the questions. 
+The rest of my work is in the screenshot and the gitk-description.txt file.

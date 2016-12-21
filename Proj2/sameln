@@ -1,0 +1,71 @@
+#!/bin/bash
+
+#save the IFS before modifying anything
+SAVEIFS=$IFS
+set -f 			# take out the glob so that *, etc, dont work as well
+IFS=$'\n'
+currDir=$1
+declare -a fileArray
+count=0
+cd $currDir
+
+#grabs all files that only start with the dot operator and sorts them
+dotFiles=`ls -a | grep "^\." | sort`
+
+for file1 in $dotFiles
+do
+	if [ ! -L "$file1" ] # check that file is not symbolic link
+	then
+		if [ -f "$file1" ] #check that file is a REGULAR file 
+		then
+			if [ -r "$file1" ] # check that file is a readeable file
+			then
+				fileArray[$count]="$file1"		#adds file1 to the array
+				let count=count+1
+			else
+				echo "The file, $file1, is unreadeable."
+			fi
+		fi
+	fi
+done
+
+#grabs all non-dot files that are left
+nonDotFiles=`ls | sort`
+
+for file2 in $nonDotFiles
+do
+	if [ ! -L "$file2" ] #check not symbolic link
+	then
+		if [ -f "$file2" ] #check that it is a regular file
+		then
+			if [ -r "$file2" ] #check that the file is readeable
+			then
+				fileArray[$count]="$file2"  #adds file2 to the array
+				let count=count+1
+			else
+				echo "The file, $file2, is unreadeable."
+			fi
+		fi
+	fi
+done
+
+#compares each file to all the files after. Since it is sorted in alpha order
+# it will always choose the file lexicographically first to use as the orig.
+# and make anything after into a hard link
+
+for (( i=0; i<$count-1; i++ ))
+do
+	for (( j=$((i+1)); j<$count; j++ ))
+	do
+		cmp -s -- "${fileArray[$i]}" "${fileArray[$j]}"	
+		if [ $? -eq "0" ]		#if the files are the same, then link them
+		then
+			rm -- "${fileArray[$j]}"		# remove the original, then link
+			ln -- "${fileArray[$i]}" "${fileArray[$j]}"
+		fi
+	done
+done
+
+#restore IFS after modifications, restore the glob after the program
+set +f
+IFS=$SAVEIFS

@@ -1,0 +1,15 @@
+diff -pru diffutils-3.0/.git/HEAD diffutils-3.0-patch/.git/HEAD
+--- diffutils-3.0/.git/HEAD	2016-10-20 00:21:15.211370000 -0700
++++ diffutils-3.0-patch/.git/HEAD	2016-10-20 00:19:00.162230000 -0700
+@@ -1 +1 @@
+-022cd5c5eb647a22a4daa5fe5cbc10af6d5a1112
++ref: refs/heads/diffUtils3.0
+Binary files diffutils-3.0/.git/index and diffutils-3.0-patch/.git/index differ
+diff -pru diffutils-3.0/.git/logs/HEAD diffutils-3.0-patch/.git/logs/HEAD
+--- diffutils-3.0/.git/logs/HEAD	2016-10-20 00:21:15.213366000 -0700
++++ diffutils-3.0-patch/.git/logs/HEAD	2016-10-20 00:19:00.155237000 -0700
+@@ -1,3 +1,2 @@
+ 0000000000000000000000000000000000000000 7346a030108e032b0e8523f381f1a95b91806890 Sahil Manoj Gandhi <gandhi@lnxsrv07.seas.ucla.edu> 1476748249 -0700	clone: from /u/cs/fac/eggert/src/gnu/diffutils
+ 7346a030108e032b0e8523f381f1a95b91806890 022cd5c5eb647a22a4daa5fe5cbc10af6d5a1112 Sahil Manoj Gandhi <gandhi@lnxsrv07.seas.ucla.edu> 1476749223 -0700	checkout: moving from master to diffUtils3.0
+-022cd5c5eb647a22a4daa5fe5cbc10af6d5a1112 022cd5c5eb647a22a4daa5fe5cbc10af6d5a1112 Sahil Manoj Gandhi <gandhi@lnxsrv07.seas.ucla.edu> 1476948075 -0700	checkout: moving from diffUtils3.0 to v3.0
+Binary files diffutils-3.0/.git/modules/gnulib/index and diffutils-3.0-patch/.git/modules/gnulib/index differ

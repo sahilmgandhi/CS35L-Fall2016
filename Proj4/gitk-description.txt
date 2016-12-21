@@ -1,0 +1,38 @@
+Sahil Gandhi
+10/20/2016
+ID: 704-598-105
+TA: Thuy Vu - Monday/Wednesday 4-6 PM
+
+The roles of the subwindows in the screenshot are as follows:
+
+The top left window appears to be a GUI that describes the commits made by 
+various individuals, and different merges over the history of this 
+repository. We can only see the commit message in this gui. 
+
+The top-middle window shows the authors of each commit, and it is in line 
+with the gui in the top-left window (so a commit in the top-left window is 
+associated with the author from the top-middle window).
+
+Similarly, the top-right window shows the dates of each commit and they are 
+in the same line as the corresponding commit from the top-left window, and 
+the corresponding author from the top-middle window.
+
+The top and bottom windows are seperated by a divider which allows you to 
+search specific things like SHA1 ID, particular row number, the name of the 
+commit, and other information about the repository to help narrow down your 
+search.
+
+On the bottom, you have two windows. Depending on whether you choose to 
+press "Patch" or "Tree" in the middle divider, the contents of these two 
+windows changes.
+
+If you press Patch: Then the bottom left shows the Changelog of the commit 
+as well as what the particular changes in the files were (like the diff 
+output you would see when you make a change, with + and - to show what was 
+removed and what was added). In the bottom right window, you see the name of 
+the files that were changed
+
+If you press Tree: Then the bototm left only shows the ChangeLog of the 
+commit, and does NOT show you the changes to each file. BUT in the bottom 
+right window, you now see the file structure of the tree at the time of the 
+commit (so which directories were where and what was inside of them).

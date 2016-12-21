@@ -1,0 +1,38 @@
+Sahil Gandhi
+11/22/2016
+TA: Thuy Vu
+Lab: Monday/Wednesday 4-6 PM
+
+1) If while we were creating the lab portion the other team could see all of the bytes accross the networks, then 
+the resulting network IS still secure. This is true because the private key is still in our control, not in the 
+control of the other team. All they have access to is the bytes, and in their encrypted format, they have no idea what 
+is happenening. 
+
+A) If they had access to our keyboard strokes then it would not be safe anymore since they would be able to know which 
+words we typed for say the username or password or to open certain programs, and then could use those known keys to 
+generate a decrypter for the rest of the characters.
+
+B) If instead they had access to the physical control of the USB (we are booting off of the USB), then the network is 
+NO LONGER secure either ... they can get their hands on the encryption key and then figure out everything that we have 
+typed. Perhaps if the key has a password associated with it, then it might be harder to get access, but even then ... 
+they could copy the key, and try cracking the password in their own time and then come back to decrypt everything you 
+have been typing.
+
+2) gpg --verify does not really verify WHO created the tar file in question, but rather if the signature was changed 
+recently (meaning someone else changed the tar file and their signature was added (hence the change)) ie ... it can 
+only verify document integrity, not document origin. This means that if I intercepted my friends program and using his 
+key, created some malicious code and sent it out to the public ... if the public tries to use gpg --verify, it will 
+say that my friend created those files and is the "hacker". However, in reality I was the one who created the 
+malicious code, and gpg --verify can't do anything about this. 
+
+Possible solutions to this problem:
+a) Directly talk to possible customers/users of the code so that they can verify that it is you. This is fine if you 
+are not distributing the code to many people, but for massively distributed programs, this would not be the best way 
+to solve the gpg --verify issue.
+
+b) Another way to solve this problem is if you have some kind of trusted third party that can generate a certificate 
+that can verify the identity of the sender based on some previously issued digital certificate. This digital 
+certificate would tell who the real owner of the code is, and if that differs from the signer, then we know there is 
+some kind of an error/mishap/trickery going on. One modern example of that is the Certificate Authority (CA) which 
+includes its own data on the sender so that it can verify the code being sent is from the correct individual/
+organization.

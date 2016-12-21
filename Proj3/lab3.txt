@@ -1,0 +1,151 @@
+Sahil Gandhi
+10/12/2016
+704-598-105
+Lecture 4 -> Monday/Wednesday 4-6 PM
+
+For the lab portion of this week's project (installing a small change to a 
+big package), I have done the following:
+
+1) First I grabbed CoreUtils7.6 by using the command:
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+
+Then I untar'ed and unzipped the utility by running: 
+tar -xzvf coreutils-7.6.tar.gz.
+
+After this, I made a folder in this directory called CoreUtilsInstall:
+mkdir CoreUtilsInstall
+
+2) I read through the INSTALL file and the README (using nano to open the 
+files), particulalry focusing on the --prefix flag. I ran the command:
+./configure --prefix=/u/ee/ugrad/gandhi/CS35L/Lab3/coreutils-7.6/
+CoreUtilsInstall.
+What this did was tell the configure command where to configure my fresh 
+installation by giving it the appropiate directory/
+
+Once this was done, I used "man make" to read about the make command, and 
+then ran make followed by make install to make and install the coreutils.
+
+3) To reproduce the bug on my own machine with the unmodified version of 
+coreutils, I first exported my locale to US.UTF-8 by using: "export 
+LC_ALL="en_US.UTF-8". After this, I ran ls. However I forgot that this would 
+actually run the ls command from /bin/ls. To use the ls that was actually in 
+the coreutils, I used the command ./ls from the bin folder within 
+coreutils-7.6 -> cd ~/CS35L/Lab3/coreutils-7.6/CoreUtilsInstall/bin ./ls -l
+Now I was able to see all the various files in this directory with the wrong 
+date format (Year-Month-Date Hour:Minutes).
+	An example of this wrong output is: 
+	-rw-r--r-- 1 gandhi eeugrad 18192 2016-10-13 16:15 randline.py
+
+4) The next step is to apply the patch to coreutils. I grabbed the correct 
+code from the 35L website link and pasted it into a file that I made called 
+patch_file (using touch patch_file to make the file, and nano patch_file to 
+access it/paste the patch). I used the man page for match to see why the 
+pnum was important (it has to deal with the patch file having directory/file 
+names to be in the correct patch). I used the following command to patch it:
+patch -p1 <patch_file.
+
+5) Then I need to remake the utils, but I should NOT do make install since 
+that would reinstall the files and overwrite the patch that I made. 
+
+make  all-recursive
+make[1]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6'
+Making all in lib
+make[2]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/lib'
+make  all-recursive
+make[3]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/lib'
+make[4]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/lib'
+make[4]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/lib'
+make[3]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/lib'
+make[2]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/lib'
+Making all in src
+make[2]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/src'
+make  all-am
+make[3]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/src'
+  CC     ls.o
+  CCLD   dir
+  CCLD   vdir
+  CCLD   ls
+make[3]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/src'
+make[2]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/src'
+Making all in doc
+make[2]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/doc'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/doc'
+Making all in man
+make[2]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/man'
+  GEN    dir.1
+  GEN    vdir.1
+  GEN    ls.1
+make[2]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/man'
+Making all in po
+make[2]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/po'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/po'
+Making all in tests
+make[2]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/tests'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/tests'
+Making all in gnulib-tests
+make[2]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/gnulib-tests'
+make  all-recursive
+make[3]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/gnulib-tests'
+make[4]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/gnulib-tests'
+make[4]: Nothing to be done for `all-am'.
+make[4]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/gnulib-tests'
+make[3]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/gnulib-tests'
+make[2]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6/gnulib-tests'
+make[2]: Entering directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6'
+make[2]: Nothing to be done for `all-am'.
+make[2]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6'
+make[1]: Leaving directory `/w/home.07/ee/ugrad/gandhi/CS35L/Lab3/
+coreutils-7.6'
+
+Most of these commands did nothing. Only CC ls.o, CCLD   dir, CCLD   vdir, 
+CCLD ls, GEN dir.1, GEN  vdir.1, and GEN ls.1  did anything since these were 
+the places affected by modifying ls.c. The other commands was merely the 
+program entering and exiting various directories immediately because there 
+were no changes to remake, but it checked those places anyways.
+
+6) I tested that the modified version of ls worked by running ./ls from the 
+src directory within core utils. As expected, it now outputs in the format 
+Month day Time or Monday day Year (just like we wanted). I made a new file 
+by running "touch newFile.txt". After running the ls command, it now 
+outputted the date as Oct 13 22:47 (the time I ran the command). I then ran 
+command "touch -t 201401210959.30 testFile.txt" and re-ran ls. This time it 
+outputted the date for testFile.txt to be Jan 21 2014 (no longer giving a 
+time, but replacing that with a year instead).
+
+Example for file recently changed:
+-rw-r--r-- 1 gandhi eeugrad 10014650 Oct 13 22:30 newFile.txt
+Example for file changed more than 1 year ago:
+-rw-r--r-- 1 gandhi eeugrad 10014650 Jan 21 2014 newFile.txt
+
+If I test with the old version of ls, I still get the buggy version which is:
+-rw-r--r-- 1 gandhi eeugrad 10014650 2016-10-13 22:30 newFile.txt 

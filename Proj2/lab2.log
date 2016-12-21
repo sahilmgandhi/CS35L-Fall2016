@@ -1,0 +1,148 @@
+Sahil Gandhi
+10/4/2016
+CS 35L -> Monday-Wednesday 4-6 PM
+ID: 704-598-105
+
+I ran all of these tests on lnxsrv09:
+
+After running locale to see if the proper LC type was there, I observed that 
+I would need to do another command to add it. Thus I used the command 
+"export LC_ALL='C'" to add it to the locale. I then typed locale to make 
+sure that the locale was actually added properly.
+
+Next I used cd /usr/share/dict to navigate to the proper directory to get 
+the words file. I used the following command "cat words | sort > /u/ee/ugrad/
+gandhi/CS35L/Lab2/words". This will sort the words folder and append it to 
+the new words folder that I have created in my own working directory.
+
+To get the webpage for assign2.html I used the command "wget -O webpage.txt 
+http://web.cs.ucla.edu/classes/fall16/cs35L/assign/assign2.html". This saved 
+the html file in my own text file called webpage.txt.
+
+Commands:
+1) tr -c 'A-Za-z' '[\n*]'
+The -c command is the complement, so this expression made every place where
+there was a non-alphabetical letter character into a new line.
+
+2) tr -cs 'A-Za-z' '[\n*]'
+This command uses the -s flag in addition to the -c, so it will get rid of 
+repeated ocurrences of spaces essentially outputing the same thing as 
+before, except without all the new lines.
+
+3) tr -cs 'A-Za-z' '[\n*]' | sort
+This command took the output from before (replacing all non-albphabets with 
+new lines and eliminating repeating new lines) and then sorting that file 
+alphabetically. It puts each word on a new line.
+
+4) tr -cs 'A-Za-z' '[\n*]' | sort -u
+This command took the output from before (replacing all non-albphabets with 
+new lines and eliminating repeating new lines) and then sorting that file 
+alphabetically. It puts each word on a new line. Then due to the -u command, 
+it eliminates all repeating instances of the same word when it sorts them.
+
+5) tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words
+This command compares the sorted webpage file (that has been done with the 
+regex commands above). The first column are the words unique to file 1 (
+webpage.txt), the 2nd column are words unique to file 2 (words), and column 
+3 is words that are the same on both pages.
+
+6) tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words
+This command compares the sorted webpage file (from the previous regex 
+commands above), but surpresses columns 2 and 3 so that you only see column 
+1. This means you see all the words that are "incorrect" compared to our 
+dictionary as these words are only seen in the webpage.txt file.
+
+-----------------------------------------------------------------------------
+I used wget -O etoh.txt http://mauimapp.com/moolelo/hwnwdseng.htm
+Now that I have the english to hawaiian dictionary html file, I need to be 
+able to trim out the random extra words in the front and the bottom, and 
+then seperate out the left and right columns.
+
+I heavily consulted the man pages for sed, tr, awk, and grep for this part 
+of the assignment. From man sed -> use the s/regexp/replacement/ 
+
+The fastest way to do this (and a logical way) is probably as follows:
+Step 1) Find all the </td> from the input (but use <&0 in the script to make 
+it take any input). 
+Step 2) Remove all html tags.
+Step 3) Then I have to remove the spaces and tags and empty lines
+Step 4) After this I will remove every 2nd line from the file since we know 
+that the first line will be an english word, and the 2nd line will be a 
+Hawaiiain word.
+Step 5) I need to replace the ASCII grave character as an apostrophe
+Step 6) Then I can convert everything from upper to lower case.
+Step 7) Since there are some translations for Hawaiian words that 
+are multiple words, I need to make those into new lines.
+Step 8) Finally, I can just sort the word.
+
+
+So after playing around with various regexpressions and reading through the 
+man pages, I believe the following steps should mimic what I have explained 
+above and properly sort out the Hawaiian words.
+
+1) grep '<td>\(..*\)<\/td>' <&0 
+2) sed -e 's/<[^>]*>//g' 
+3) sed 's/^[ \t]\+//g'
+4) sed '1~2d'# 
+5) sed 's/`/'"'"'/g'
+6) tr '[:upper:]' '[:lower:]'
+7) tr -cs [pk\'mnwlhaeiou] '\n' 
+8) sort -u
+
+----------------------------------------------------------------------------
+Now after creating the Hawaiian word doc by running the command ./buildwords 
+< etoh.txt > hwords.txt, I have a full Hawaiian dictionary.
+Now to translate the tr-cs commands that we used earlier for using Hawaiian 
+words I did: tr -cs 'A-Za-z' '[\n*]' < fileName | tr '[:upper:]' '[:lower:]' 
+| sort -u | comm -23 - hwords.txt
+
+
+1) To check the number of mispelled English Words, I ran the command :
+tr -cs 'A-Za-z' '[\n*]' < webpage.txt | tr '[:upper:]' '[:lower:]' | sort -u 
+| comm -23 - words.txt > ediff.txt
+cat ediff.txt | wc -w
+
+I found that there were 38 mispelled English words if I did not convert the 
+english dictionary to lower case.
+
+*Note* If I compared it to the lowercase version of the dictionary, I get 32 
+mispelled English words instead.
+
+2) To check the number of mispelled English words, I ran the command:
+tr -cs 'A-Za-z' '[\n*]' < webpage.txt | tr '[:upper:]' '[:lower:]' | sort -u 
+| comm -23 - hwords.txt > hdiff.txt
+cat hdiff.txt | wc -w
+
+I found that there were 405 mispelled Hawaiian words.
+
+3) Now there seem to be some words that are Mispelled in English but not as 
+Hawaiian, and vice versa. To check which words were mispelled in Enlish but 
+not in Hawaiian, I ran the following command:
+
+cat ediff.txt | comm -12 - hwords.txt
+
+What this does is that it compares the "mispelled" english words with the 
+Hawaiian dictionary, and surpresses the first and second columns (leaving 
+only the 3rd column which is the words that are the same in the Hawaiian 
+dictionary and on the mispelled english list).
+The following three words were mispelled in English, but not in Hawaiian (
+using the non-lowercased English dictionary output): 
+halau, lau, and wiki. 
+
+*Note* If we instead use the 32 word output for ediff, we only get 2 
+mispelled words in English and not in Hawaiian. These are: halau and wiki.
+
+4) I can do a similar method to get the mispelled words as Hawaiian but not 
+as English by running:
+cat hdiff.txt | comm -12 - words.txt
+
+There were 370 words that were mispelled as Hawaiian, but not as english. 
+Some of these words are:
+a, able, about, read, readable, reading, script, shell, software, 
+traditional, utilities. 
+There were 359 other words, but I have given just a few examples above.
+
+*Note* once again, the 370 number was comparing hdiff to the Upper and lower 
+case words.txt file. If I instead compare to the lowercase version for the 
+words file, I get 375 words that are mispelled in Hawaiian but not in 
+English, and the 11 words written above still satisfy this constraint.

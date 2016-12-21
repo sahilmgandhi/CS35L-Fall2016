@@ -1,0 +1,69 @@
+Sahil Gandhi
+11/9/2016
+TA: Thuy Vu
+Lab: Monday/Wednesday 4-6 PM
+
+1) I first exported my path using "export PATH=/usr/local/cs/bin:$PATH" so that I could see the correct version of 
+sort. I checked this by running "sort --version" and the output was 8.25 which was new enough according to my TA.
+
+2) Next I wanted to take the 10 milllion random double precision floating point numbers from /dev/urandom and 
+according to the spec, I need to use sed and tr to make sure that each floating point number is on a new line ... 
+without any space:
+
+"od -An -t f8 -N 80000000 < /dev/urandom | tr - s ' ' '\n' > randomFloats.txt"
+
+I ran "wc -l randomFloats.txt" and saw that there were indeed 10,000,000 floating point numbers generated
+
+3) The next step is to time the sort using the -g option:
+"time -p sort -g randomFloats.txt > /dev/null"
+
+real 36.56
+user 205.70
+sys 0.56
+
+As we can see, the real time of the sort was 36.56 seconds, and that is the time it took for the prorgram to run its 
+entirety. The sys (the time spent in the kernel of the laptop) is 0.56 seconds which seems like the sort command 
+heavily relies on buffers to go through the inputs. The weird value is the user one ... how can it be taking up 205 
+seconds if the real time is only 37 seconds. I belive that this may be due to the default sort being 8 cores, which 
+means that each core took about 205/8 or 25 seconds to perform its actions in the user (non kernel space, aka 
+processes that are not handled by the kernel/hardware and are instead handled by the CPU.
+
+4) Now let's test the results on using other amounts of threads. The assignment wants us to use 1, 2, 4 and 8 threads 
+so I ran the following command "time -p sort -g --parallel=N randomFloats.txt > /dev/null" but I replaced with 1, 2, 
+4, 8 respectively.
+
+1 thread:
+real 196.88
+user 196.57
+sys 0.30
+
+2 threads:
+real 103.13
+user 197.35
+sys 0.36
+
+4 threads:
+real 58.54
+user 198.56
+sys 0.47
+
+8 threads:
+real 37.42
+user 211.60
+sys 0.55
+
+These results confirm my belief that the default parameter of sort seems to be with 8 parallel threads. The "real" 
+time consistently goes down as we add more threads because the total time from the start to the end of the execution 
+of the sort goes down since we are sharing the workload with multiple cores. It does NOT go down by any factor though 
+... which means that there is some overlap in the work that the threads are doing and that maybe there is a way to 
+parallelize sort more (or make this more efficient). However, the really strange thing is that not only do the user 
+times stay roughly the same/increase with the 8 thread version, but the sys time also goes up a little bit as we add 
+more threads. I believe the slight increase in sys time is due to the kernel dealing with race cconditions (or rather 
+trying to avoid the conditions), and thus more time is spent in this sys part of the computer to deal with this. 
+
+Similarly, the user time is roughly the same across 1,2 and 4 threads, but slightly increases for the 8 threaded 
+version ... perhaps due to the program requiring more time to factor in for race conditions and such. Additionally, 
+this also supports my suspicion that the user time, which represents the time the CPU took to perform its actions, is 
+the SUM of the times spent by each CPU core. That is why the time in the user space is roughly the same ... for 1 
+thread, that single thread takes 195 seconds to go through ... for 2 threads its still 195 seconds because each thread 
+takes 97.5 seconds (and you add that up, 97.5 + 97.5 = 195). This continues on for 4 and 8 threads as well.

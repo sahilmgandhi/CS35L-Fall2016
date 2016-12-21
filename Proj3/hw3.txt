@@ -1,0 +1,50 @@
+Sahil Gandhi
+10/12/2016
+704-598-105
+Lecture 4 -> Monday/Wednesday 4-6 PM
+
+After completing the lab, I can now answer the following questions related 
+to Brady's patch:
+
+Q1) Brady's patch removed the line "case_long_iso_time_style:" because the 
+underscore after case was causing errors in the flow of the for loop. In his 
+loop, it only called "case long_iso_time_style", there was no underscore 
+after case! However removing this line was not neccesary at all because in 
+the end, Brady simply removed most of the innards of the for loop, 
+especially the parts which would call that case anyways. Thus if he had left 
+it as it was before, then his patch would have still worked.
+
+Q2)If my company adopts ths patched version of Coreutils instead of the 
+defualt one, then I should also watch out for future updates which might 
+break the patch that we included. Additionally, for non-english speakers or 
+those who don't understand English format dates, having the name of the 
+month in English might not correspond to a month that they know in their own 
+language (ex. February in English = fee-VRAHL in Russian). This might cause 
+confusion among these international users. However, nearly everyone knows 
+that the 2nd month is February/fee-VRAHL/whatever other method of 
+pronouncing it.
+
+-----------------------------------------------------------------------------
+
+I used the following commands to get randline.py into my system:
+touch randline.py
+nano randline.py
+"copy and paste the randline.py script"
+Save and exit the document.
+
+Q3)If I run the randline.py python script on /dev/null, an empty file, I get 
+the following errors: IndexError: list index out of range.
+Essentially what this means is that in line 274 of the random.py library, if 
+the seq is empty (sequence), then it raises an IndexError. THis is invoked 
+by random.choice(self.lines) in randline.py, but self.lines is 0 and that 
+causes the error in random.py library that I mentioned earlier.
+
+Q4)If I run the randline.py script on /dev/null but using python3 instead of 
+python2, I get the following error: Except IOError as (errno, strerror) -> 
+Syntax error (invalid syntax) 
+
+This appears to be in line 65 of randline.py which suggests that it does not 
+follow the syntax of the python3 and thus even before it can reach the 
+random.py and throw the IndexError that we saw when running from python2. 
+Perhaps the script must be changed to allow it to be used in python3 into 
+something like "except IOError as err:".

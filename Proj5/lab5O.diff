@@ -1,0 +1,32 @@
+2016-10-28  Sahil Manoj Gandhi  <gandhi@lnxsrv07.seas.ucla.edu>
+
+	* /lib/timespec.h Changed from int to long comparison to deal with overflow.
+
+--- lib/timespec.h	2016-10-28 00:33:06.000000000 -0700
++++ lib/timespecTemp.txt	2016-10-28 00:37:49.000000000 -0700
+@@ -18,6 +18,7 @@
+ 
+ #if ! defined TIMESPEC_H
+ # define TIMESPEC_H
++#include <limits.h>
+ 
+ # include <sys/types.h>
+ # if TIME_WITH_SYS_TIME
+@@ -45,8 +46,15 @@
+ static inline int
+ timespec_cmp (struct timespec a, struct timespec b)
+ {
+-  int diff = a.tv_sec - b.tv_sec;
+-  return diff ? diff : a.tv_nsec - b.tv_nsec;
++  long longDiff = a.tv_sec - b.tv_sec;
++  int currDiff = 0;
++  if (longDiff > INT_MAX)
++      currDiff = INT_MAX;
++  else if (longDiff < INT_MIN)
++      currDiff = INT_MIN;
++  else
++      currDiff = a.tv_sec - b.tv_sec;
++  return currDiff ? currDiff : a.tv_nsec - b.tv_nsec;
+ }
+ 
+ # if ! HAVE_DECL_NANOSLEEP

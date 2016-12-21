@@ -1,0 +1,279 @@
+Sahil Gandhi
+11/14/2016
+TA: Thuy Vu
+Lab: Monday/Wednesday 4-6 PM
+
+1) I wrote the following trivial C program, trivialProg.c, which calculates the cos(0.5) and outputs it:
+"#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+int main()
+{
+        /* code */
+
+        double cosAns = cos(0.5);
+        printf("%.17g\n", cosAns);
+
+        return 0;
+}"
+
+I ran the command "gcc -o trivialProg trivialProg.c" to compile the program and ran it with "./trivialProg".
+
+2) To see which dynamic libraries my program used, I typed in the command "ldd ./trivialProg"
+
+===============================================================
+linux-vdso.so.1 =>  (0x00007ffec1953000)
+libc.so.6 => /lib64/libc.so.6 (0x00007fce6ac43000)
+/lib64/ld-linux-x86-64.so.2 (0x00007fce6b02a000)
+===============================================================
+
+Neither stdlib, nor stdio, nor math are located in these dynamic library calls.
+
+3) The next step was to use strace to see which system calls my program makes:"strace ./trivialProg"
+
+============================================================================================================
+execve("./trivialProg", ["./trivialProg"], [/* 34 vars */]) = 0
+brk(0)                                  = 0x137d000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fa2fa5b0000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=147187, ...}) = 0
+mmap(NULL, 147187, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fa2fa58c000
+close(3)                                = 0
+open("/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0 \34\2\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=2112384, ...}) = 0
+mmap(NULL, 3936832, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fa2f9fce000
+mprotect(0x7fa2fa185000, 2097152, PROT_NONE) = 0
+mmap(0x7fa2fa385000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1b7000) = 0x7fa2fa385000
+mmap(0x7fa2fa38b000, 16960, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fa2fa38b000
+close(3)                                = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fa2fa58b000
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fa2fa589000
+arch_prctl(ARCH_SET_FS, 0x7fa2fa589740) = 0
+mprotect(0x7fa2fa385000, 16384, PROT_READ) = 0
+mprotect(0x600000, 4096, PROT_READ)     = 0
+mprotect(0x7fa2fa5b1000, 4096, PROT_READ) = 0
+munmap(0x7fa2fa58c000, 147187)          = 0
+fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 99), ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fa2fa5af000
+write(1, "0.87758256189037276\n", 20)   = 20
+exit_group(0)                           = ?
++++ exited with 0 +++
+
+=====================================================================================================================
+
+Of all these system calls, we want to look for the ones that call the .so files, and that seems to be the followiing 
+alls:
+
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+open("/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+
+The program attempted to access ld.so.preload, but it was not able to, but the other two .soo files were able to be 
+accessed (ld.so.cache  and libc.so.6). I know that these files are correctly loaded because they equal 3, which is 
+non-negative and siginifies the success of the command.
+
+4) The next step was to run the command "ls /usr/bin | awk 'NR%101==704598105%101'". What this appears to do is just  
+look at the number of records (NR is current number of the line being passed into the awk). If that modulo 101 is 
+equal to my ID modulo 101 (in my case, ID%101 = 87), then I it should keep that line. Else, it should discard that 
+line. The following were the commands I had to investigate: 
+
+==========================
+aplaymidi
+cd-info
+ctest
+dracut
+filterdiff
+glib-gettextize
+gtester
+icu-config-64
+jscal
+kopete_latexconvert.sh
+libpng-config
+mev
+nfs4_setfacl
+padsp
+pkla-admin-identities
+pstack
+rm
+sh
+sum
+tload
+wall.README.seasnet
+xml_split
+===============================
+
+5) I was going to run "ldd" on all of these commands, but instead a TA said that it would be better to just use a 
+script instead. So I wrote the following script to get the inputs of these programs and then run ldd on each of them. 
+I then sorted the output to get rid of duplicates. There were some errors that I came across and I will talk about 
+them after the following shell script and output of all the lists.
+
+===================================================================
+Script:
+#!/bin/bash
+
+outputs=$(ls /usr/bin | awk 'NR%101==704598105%101')
+
+for line in $outputs; do
+	ldd /usr/bin/$line >> temp.txt
+done
+
+sort -u temp.txt > outputs.txt
+=======================================================
+
+Result of "cat outputs.txt":
+
+====================================================================
+/lib64/ld-linux-x86-64.so.2 (0x00007efe20575000)
+/lib64/ld-linux-x86-64.so.2 (0x00007f02fc42f000)
+/lib64/ld-linux-x86-64.so.2 (0x00007f0d7c4a8000)
+/lib64/ld-linux-x86-64.so.2 (0x00007f18f925b000)
+/lib64/ld-linux-x86-64.so.2 (0x00007f5afd846000)
+/lib64/ld-linux-x86-64.so.2 (0x00007f7b29210000)
+/lib64/ld-linux-x86-64.so.2 (0x00007f90c06a3000)
+/lib64/ld-linux-x86-64.so.2 (0x00007faca0bc3000)
+/lib64/ld-linux-x86-64.so.2 (0x00007fb9c2746000)
+/lib64/ld-linux-x86-64.so.2 (0x00007fc5c0955000)
+/lib64/ld-linux-x86-64.so.2 (0x00007fc6bc96f000)
+/lib64/ld-linux-x86-64.so.2 (0x00007fe67a9ac000)
+/lib64/ld-linux-x86-64.so.2 (0x00007ff7bda01000)
+libacl.so.1 => /lib64/libacl.so.1 (0x00007fac9ec57000)
+libarchive.so.13 => /lib64/libarchive.so.13 (0x00007faca02b2000)
+libasound.so.2 => /lib64/libasound.so.2 (0x00007fe67a69e000)
+libattr.so.1 => /lib64/libattr.so.1 (0x00007f18f5c27000)
+libattr.so.1 => /lib64/libattr.so.1 (0x00007f5afb590000)
+libattr.so.1 => /lib64/libattr.so.1 (0x00007f90c0271000)
+libattr.so.1 => /lib64/libattr.so.1 (0x00007fac9ea52000)
+libbz2.so.1 => /lib64/libbz2.so.1 (0x00007f18f5800000)
+libbz2.so.1 => /lib64/libbz2.so.1 (0x00007f5afaf08000)
+libbz2.so.1 => /lib64/libbz2.so.1 (0x00007fac9e3fb000)
+libcap.so.2 => /lib64/libcap.so.2 (0x00007f18f70a2000)
+libcap.so.2 => /lib64/libcap.so.2 (0x00007f5afce06000)
+libcdio.so.15 => /lib64/libcdio.so.15 (0x00007f02fbfd4000)
+libcom_err.so.2 => /lib64/libcom_err.so.2 (0x00007fac9c2c5000)
+libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00007fac9ee61000)
+libcrypt.so.1 => /lib64/libcrypt.so.1 (0x00007fac9ad44000)
+libc.so.6 => /lib64/libc.so.6 (0x00007efe1fd5f000)
+libc.so.6 => /lib64/libc.so.6 (0x00007f02fb90f000)
+libc.so.6 => /lib64/libc.so.6 (0x00007f0d7bb6d000)
+libc.so.6 => /lib64/libc.so.6 (0x00007f18f7f37000)
+libc.so.6 => /lib64/libc.so.6 (0x00007f5afd00b000)
+libc.so.6 => /lib64/libc.so.6 (0x00007f7b28e29000)
+libc.so.6 => /lib64/libc.so.6 (0x00007f90bfeaf000)
+libc.so.6 => /lib64/libc.so.6 (0x00007fac9f465000)
+libc.so.6 => /lib64/libc.so.6 (0x00007fb9c205d000)
+libc.so.6 => /lib64/libc.so.6 (0x00007fc5c056e000)
+libc.so.6 => /lib64/libc.so.6 (0x00007fc6bc588000)
+libc.so.6 => /lib64/libc.so.6 (0x00007fe679bb9000)
+libc.so.6 => /lib64/libc.so.6 (0x00007ff7bd413000)
+libcurl.so.4 => /lib64/libcurl.so.4 (0x00007faca004a000)
+libdl.so.2 => /lib64/libdl.so.2 (0x00007efe20122000)
+libdl.so.2 => /lib64/libdl.so.2 (0x00007f18f78fe000)
+libdl.so.2 => /lib64/libdl.so.2 (0x00007f5afd3cd000)
+libdl.so.2 => /lib64/libdl.so.2 (0x00007faca099a000)
+libdl.so.2 => /lib64/libdl.so.2 (0x00007fe67a197000)
+libdw.so.1 => /lib64/libdw.so.1 (0x00007f18f62a4000)
+libdw.so.1 => /lib64/libdw.so.1 (0x00007f5afbbc8000)
+libelf.so.1 => /lib64/libelf.so.1 (0x00007f18f5a11000)
+libelf.so.1 => /lib64/libelf.so.1 (0x00007f5afb118000)
+libexpat.so.1 => /lib64/libexpat.so.1 (0x00007faca0770000)
+libffi.so.6 => /lib64/libffi.so.6 (0x00007f18f7b02000)
+libfreebl3.so => /lib64/libfreebl3.so (0x00007fac9a8e0000)
+libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f18f608e000)
+libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f5afb9b2000)
+libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007fac9f828000)
+libgcrypt.so.11 => /lib64/libgcrypt.so.11 (0x00007f18f66f1000)
+libgcrypt.so.11 => /lib64/libgcrypt.so.11 (0x00007f5afc22f000)
+libgio-2.0.so.0 => /lib64/libgio-2.0.so.0 (0x00007f18f8a9e000)
+libglib-2.0.so.0 => /lib64/libglib-2.0.so.0 (0x00007f0d7c14c000)
+libglib-2.0.so.0 => /lib64/libglib-2.0.so.0 (0x00007f18f8516000)
+libgmodule-2.0.so.0 => /lib64/libgmodule-2.0.so.0 (0x00007f18f7d33000)
+libgobject-2.0.so.0 => /lib64/libgobject-2.0.so.0 (0x00007f18f884d000)
+libgpg-error.so.0 => /lib64/libgpg-error.so.0 (0x00007f18f64ec000)
+libgpg-error.so.0 => /lib64/libgpg-error.so.0 (0x00007f5afc02a000)
+libgpm.so.2 => /lib64/libgpm.so.2 (0x00007ff7bd7d5000)
+libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x00007fac9c9e1000)
+libidn.so.11 => /lib64/libidn.so.11 (0x00007fac9de5d000)
+libiso9660.so.9 => /lib64/libiso9660.so.9 (0x00007f02fc1fd000)
+libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x00007fac9c4ca000)
+libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x00007fac9b5d9000)
+libkrb5.so.3 => /lib64/libkrb5.so.3 (0x00007fac9c6fc000)
+libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x00007fac9b7dd000)
+liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 (0x00007fac9c0b6000)
+libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 (0x00007fac9be63000)
+liblzma.so.5 => /lib64/liblzma.so.5 (0x00007f18f6972000)
+liblzma.so.5 => /lib64/liblzma.so.5 (0x00007f5afc4b0000)
+liblzma.so.5 => /lib64/liblzma.so.5 (0x00007fac9e60b000)
+liblzo2.so.2 => /lib64/liblzo2.so.2 (0x00007fac9e831000)
+libm.so.6 => /lib64/libm.so.6 (0x00007f02fbcd1000)
+libm.so.6 => /lib64/libm.so.6 (0x00007f18f6da0000)
+libm.so.6 => /lib64/libm.so.6 (0x00007f5afcb03000)
+libm.so.6 => /lib64/libm.so.6 (0x00007fac9fa3e000)
+libm.so.6 => /lib64/libm.so.6 (0x00007fb9c241f000)
+libm.so.6 => /lib64/libm.so.6 (0x00007fe67a39c000)
+libnspr4.so => /lib64/libnspr4.so (0x00007fac9cc2e000)
+libnss3.so => /lib64/libnss3.so (0x00007fac9d4a2000)
+libnssutil3.so => /lib64/libnssutil3.so (0x00007fac9d276000)
+libpcre.so.1 => /lib64/libpcre.so.1 (0x00007f18f5e2d000)
+libpcre.so.1 => /lib64/libpcre.so.1 (0x00007f5afb32e000)
+libpcre.so.1 => /lib64/libpcre.so.1 (0x00007fac9aae3000)
+libplc4.so => /lib64/libplc4.so (0x00007fac9ce6c000)
+libplds4.so => /lib64/libplds4.so (0x00007fac9d071000)
+libpolkit-gobject-1.so.0 => /lib64/libpolkit-gobject-1.so.0 (0x00007f18f8e14000)
+libprocps.so.4 => /lib64/libprocps.so.4 (0x00007f5afd5fa000)
+libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f0d7bf30000)
+libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f18f82fa000)
+libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f5afb795000)
+libpthread.so.0 => /lib64/libpthread.so.0 (0x00007fac9f249000)
+libpthread.so.0 => /lib64/libpthread.so.0 (0x00007fe679f7b000)
+libresolv.so.2 => /lib64/libresolv.so.2 (0x00007f18f72a8000)
+libresolv.so.2 => /lib64/libresolv.so.2 (0x00007f5afbe0f000)
+libresolv.so.2 => /lib64/libresolv.so.2 (0x00007fac9b3bf000)
+librt.so.1 => /lib64/librt.so.1 (0x00007f18f6b98000)
+librt.so.1 => /lib64/librt.so.1 (0x00007f5afc8fb000)
+librt.so.1 => /lib64/librt.so.1 (0x00007fac9b9ed000)
+librt.so.1 => /lib64/librt.so.1 (0x00007fe6799b0000)
+libsasl2.so.3 => /lib64/libsasl2.so.3 (0x00007fac9b1a1000)
+libselinux.so.1 => /lib64/libselinux.so.1 (0x00007f18f74c2000)
+libselinux.so.1 => /lib64/libselinux.so.1 (0x00007f5afc6d6000)
+libselinux.so.1 => /lib64/libselinux.so.1 (0x00007fac9af7c000)
+libsmime3.so => /lib64/libsmime3.so (0x00007fac9d7c8000)
+libssh2.so.1 => /lib64/libssh2.so.1 (0x00007fac9dc33000)
+libssl3.so => /lib64/libssl3.so (0x00007fac9d9f0000)
+libssl.so.10 => /lib64/libssl.so.10 (0x00007fac9bbf5000)
+libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00007fac9fd40000)
+libsystemd.so.0 => /lib64/libsystemd.so.0 (0x00007f18f7d0b000)
+libsystemd.so.0 => /lib64/libsystemd.so.0 (0x00007f5afd5d2000)
+libtinfo.so.5 => /lib64/libtinfo.so.5 (0x00007efe20326000)
+libxml2.so.2 => /lib64/libxml2.so.2 (0x00007fac9e091000)
+libz.so.1 => /lib64/libz.so.1 (0x00007f18f76e8000)
+libz.so.1 => /lib64/libz.so.1 (0x00007f5afacf1000)
+libz.so.1 => /lib64/libz.so.1 (0x00007faca0559000)
+linux-vdso.so.1 =>  (0x00007ffc3d556000)
+linux-vdso.so.1 =>  (0x00007ffd34190000)
+linux-vdso.so.1 =>  (0x00007ffd595b6000)
+linux-vdso.so.1 =>  (0x00007ffd7e7b2000)
+linux-vdso.so.1 =>  (0x00007ffde1bd3000)
+linux-vdso.so.1 =>  (0x00007ffe50ff5000)
+linux-vdso.so.1 =>  (0x00007ffe7dbb6000)
+linux-vdso.so.1 =>  (0x00007ffe8bf8b000)
+linux-vdso.so.1 =>  (0x00007ffecb699000)
+linux-vdso.so.1 =>  (0x00007fff063b6000)
+linux-vdso.so.1 =>  (0x00007fff12bc8000)
+linux-vdso.so.1 =>  (0x00007fff32b60000)
+linux-vdso.so.1 =>  (0x00007fffd61fa000)
+not a dynamic executable
+
+====================================================================
+
+I did run into several problems while running this script. The first problem was that I did not have executable 
+permissionn for wall.README.seasnet, which meant that the outputs of running ldd on this file is unknown.
+Aditionally, it seems that for some files, I had the error that "not a dynamic executable". While this is not really 
+an error, I realized that this output is happening due to some of the files in /usr/bin that I needed to execute were 
+actually bash scripts, and not executables. Thus running ldd on them has no output except "not a dynamic executable". 
+Some examples of files where this error popped up are: "dracut, glib-gettextize, icu-config-64, 
+kopete_latexconvert.sh, libpng-config, padsp, pstack, wall.README.seasnet, xml_split". This is actually 9/22 of the 
+files that I had to run, which is why maybe my output of all the LDDs is 
+slightly smaller than other  people  

@@ -1,0 +1,167 @@
+Sahil Gandhi
+10/31/2016
+TA: Thuy Vu
+Lab: Monday/Wednesday 4-6 PM
+
+1) Step one was to write the tr2b.c and the tr2u.c programs. The difference between these two programs is that tr2b 
+uses a buffer to read and print out characters (get char and putchar). The buffer essentially works like a cache where 
+certain chunks of your text are stored for quick access. This speeds up the program and also relies on less time spent 
+in the kernel of the computer and more time in the other sections (user and real regions of the computer). The tr2u.c 
+program instead relies on kernel calls (aka using read and write) with NByte = 1. This will logically be much more 
+timeexpensive due to all the calls required to read and write the characters (system caaalls interrupt the current 
+process, save the state and then after the CPU performs the action, gives control back to the user). Additionally 
+isntead of storing chunks of text at a time to read, we are only reading and outputting one char at a time which is 
+very bad for time cost.
+
+2) After writing the two programs and seeing that they worked on small files, I tried testing them on large files ... 
+aka a file of size 5,000,000 bytes or larger. I tested on the rt.jar file from assignment 6, but truncated it so that 
+it had 6,000,000 bytes. The assignment told us to use the "strace" command to compare the 
+system calls when doing one of the following two things:
+
+strace -c -o result1.txt ./tr2u 'abc' 'def' < test_file > outputtFile or no output if you want to print to terminal
+
+a) copying one file to another
+
+tr2b:
+I ran the following command: "strace -c -o bCopyResult.txt ./tr2b 'abc' 'def' < veryLargeFile.txt > bCopy.txt"
+The program finished almost instantaneously, here were the following results: 
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 35.87    0.000118           1        94           read
+ 21.28    0.000070           1        92           write
+ 14.89    0.000049           5         9           mmap
+  7.60    0.000025           6         4           mprotect
+  5.17    0.000017           4         4           fstat
+  3.95    0.000013           7         2           open
+  3.04    0.000010          10         1           munmap
+  2.43    0.000008           4         2           close
+  1.82    0.000006           6         1         1 access
+  1.52    0.000005           5         1           execve
+  1.22    0.000004           4         1           brk
+  1.22    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000329                   212         1 total
+
+There were only about 94 read and 92 write calls, and the entire program finished in a matter of milliseconds. As 
+expected, the use of the buffer to store large chunks of data and then just read from the chunks seems to have sped up 
+the program significantly. Since we know that there were 5.86 million bytes in the file and that 94 read calls were 
+performed, the buffer size appears to be 62,235 bytes (roughly 64 kb). Similarly, the output file had a size of 5.8 
+million bytes and with 92 system calls to write, that also corresponds to about 63,000 bytes as the buffer size. Now 
+let's see how tr2u performs in the same case.
+
+tr2u:
+I ran the following command: "strace -c -o uCopyResult.txt ./tr2u 'abc' 'def' < veryLargeFile.txt > uCopy.txt".
+The program seemed to have hung or frozen for quite a while, but eventually it finished running. Even before printing 
+out the result, I can see that by not using a buffer, the timings for this program has increased exponentially. Each 
+byte must be read and written one at a time which is quite inefficient (and is the reason why the cache was invented). 
+Here was the result from this strace:
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.55    6.617773           1   6000001           write
+ 44.45    5.294670           1   6000003           read
+  0.00    0.000038           5         7           mmap
+  0.00    0.000026           7         4           mprotect
+  0.00    0.000013           7         2           open
+  0.00    0.000009           9         1           munmap
+  0.00    0.000008           4         2           fstat
+  0.00    0.000007           4         2           close
+  0.00    0.000007           7         1         1 access
+  0.00    0.000005           5         1           execve
+  0.00    0.000004           4         1           arch_prctl
+  0.00    0.000003           3         1           brk
+------ ----------- ----------- --------- --------- ----------------
+100.00   11.912563              12000026         1 total
+
+Woah! While the output says that it took about 11.91 seconds only to finish the strace, it actually seemed to take a 
+few minutes. Regardless, as expected we had nearly 12 million system calls (counting read and write) ... and this is 
+expected. We set the "buffer" size to 1 so that it was reading and writing only 1 byte at a time. That means at every 
+byte, it was stopping the program, passing control to the kernel, making the kernel do the work, and then passing 
+control back to the user. Indeed that is slow and inefficient. Let's now see what happens if we just print to the 
+terminal.
+
+b) copying a file to the terminal
+tr2b:
+I ran the following command: "strace -c -o bTermResult.txt ./tr2b 'abc' 'def' < veryLargeFile.txt". Once again, as 
+expected the program was speedy because of the use of buffers. Here were the results:
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 99.16    0.061051           1     52036           write
+  0.59    0.000364           4        94           read
+  0.08    0.000050           6         9           mmap
+  0.04    0.000027           7         4           mprotect
+  0.03    0.000017           4         4           fstat
+  0.02    0.000015           8         2           open
+  0.02    0.000010          10         1           munmap
+  0.02    0.000010          10         1         1 access
+  0.01    0.000008           8         1           execve
+  0.01    0.000007           4         2           close
+  0.01    0.000004           4         1           arch_prctl
+  0.00    0.000003           3         1           brk
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.061566                 52156         1 total
+
+As we can see, it had the same number of system calls for reading (94) as when we outputted it to a file. The main 
+difference is the time it took and the amount of "write" calls. This time, the tr2b took about .06 seconds, or about 
+200 times longer than the previous version ... probably due to the amount of write calls. This means that the buffer 
+size for outputting to the terminal is only about 111 bytes large ... compared to the 63kb it is for reading. I 
+predict that we may see a similar increase in time for the tr2u program when we output to the terminal.
+
+tr2u:
+I ran the following command: "strace -c -o uTermResult.txt ./tr2u 'abc' 'def' < veryLargeFile.txt". As expected, this 
+version took MUCH longer than the previous one (I'm predict atleast 20 times longer). Let's see what the results say:
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.36    7.496380           1   6000001           write
+ 44.64    6.044520           1   6000003           read
+  0.00    0.000042           6         7           mmap
+  0.00    0.000025           6         4           mprotect
+  0.00    0.000015           8         2           open
+  0.00    0.000010          10         1           munmap
+  0.00    0.000009           5         2           fstat
+  0.00    0.000008           4         2           close
+  0.00    0.000007           7         1         1 access
+  0.00    0.000006           6         1           execve
+  0.00    0.000004           4         1           brk
+  0.00    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   13.541030              12000026         1 total
+
+Once again, it was significantly longer than the tr2b program, but not quite the expected 20x longer time (though it 
+definitely seemed to me based on how long my system was just printing out the content to the terminal). I believe this 
+is probably due to the fact that regardless of the fact of where we are outputting the result of the program, it will 
+ALWAYS be 1 byte reading and 1 byte write ... unlike the tr2b which had a smaller buffer for writes when outputting to 
+the terminal. Because of this, the time was appproximately the same and the system calls were the exact same as the 
+tr2u strace output when we outputted to a file. 
+
+3) The last step was to use the time command to see which program was faster compared to the other with the same 
+amount of data. To test out this part, I copied over the file with 5 million bytes to another output file and saw the 
+time difference between the two programs.
+
+a) tr2b:
+
+I ran the following command "time ./tr2b 'abc' 'def' < veryLargeFile.txt > o1.txt"
+
+real 0m0.208s
+user 0m0.127s
+sys  0m0.005s
+
+There isn't much time spend in the sys part of the computer (aka the kernel) as there aren't many reads and write 
+commands performed (due to the buffer size). Most of the time is spent in the real and user parts which is what we 
+expect from a buffered program.
+
+b) tr2u:
+I ran the following command "time ./tr2u 'abc' 'def' < veryLargeFile.txt > o2.txt"
+
+real 0m8.663s
+user 0m0.337s
+sys  0m8.252s
+
+Once again we see that the time in the kernel (the sys part of the computer) is 8.252 seconds for tr2u compared to 
+.005s for tr2b. This is nearly 1600 times more time spent in the kernel, which is why the program takes so much time 
+to complete (all those stops, passing control to the kernel, and then repassing control back to the user). This is why 
+it is useful to use buffers (getchar() and putchar() instead of using read and write), we reduce the number of system 
+calls and speed up the performance of your program. 	

@@ -1,0 +1,81 @@
+Sahil Gandhi
+704-598-105
+Discussion: Monday-wednesday 4-6 PM
+
+Laboratory Answers:
+
+1)To find this answer, I searched up the man man and looked for the Search
+key word. man -k specificWord
+
+2)The TA had told us that whereis can be used to locate where a executable 
+is stored. I used whereis to find the location of wp and cp. wp is located 
+at /usr/bin/wc and cp is located at /usr/bin/cp. 
+
+3)I navigated to the /usr/bin directory and used the ls-d option to find all 
+the files that were only 1 character long (using the ? expression). The 
+three executable programes with one character long only are [, X, and w. [ 
+is part of the bash builtin command and it accepts options to do more 
+complicated tasks. W is used to see who is logged on and what they are 
+doing. X runs the Xorg linux GUI. It does not have a man page.
+
+4)I knew that the -l command is used primarily for symbolic links, so to 
+follow it I searched up the manual for ls, and saw the command ls -l. ls -l 
+emacs leads to /etc/alternatives/emacs
+
+5)I found the following information in the chmod man page. Chmod g+s,o-x 
+means that you want to set the user or group ID on execution for all users 
+in the file's group and at the same time, remove executable permissions from 
+user not in the file's group.
+
+6)I used the man page for "find" to ge the following answer. To find the 
+files that have been modified in the last 3 weeks, you need to type find 
+-mtime -21. The number is the #*24 hours in the past that you want to search.
+
+7) I used the man page for "find" to search for directory to specificy to 
+find modified directories rather than just files. The command to find the 
+directories modified in the last 3 weeks is find -type d -mtime -21. For me, 
+the directories that were modified in the last 3 weeks were: ../.cache/abrt, 
+./.emacs.d, ./.emacs.d/auto-save-list, ./CS35L .
+
+8) After looking through the man page for find, I saw that the -L option 
+looks for symbolic links and -xtype is needed rather than just -type. I then 
+ran the command "find -L . -xtype l | wc -l", and used the word count to see 
+that there were 289 symbolic links in this directory.
+
+9) I used the man files to search up the "search by time" flag for ls. This 
+turned out to be ls -t. I found that the oldest file in the /usr/lib/ 
+directory is libfreeblpriv3.so.
+
+10) The data for locale comes from the current locale environment or all 
+public locales if a flag is not specified and writes that information to the 
+standard output. I used the man page for locale to find this information. 
+Locale also gets information from system variables like LANG, LC_CTYPE, and 
+more.
+
+11)Using the emacs help menu, I was able to find that C-h a was the command 
+that I needed to search for commands with a specific word in them. The 
+commands that have sort in them are: Buffer-menu-sort, sort-columns, 
+sort-fields, sort-lines, sort-numeric-fields, sort-pages, sort-paragraphs, 
+sort-regexp-fields, tabulated-list-col-sort, tabulated-list-sort.
+
+12)After using emacs help function, I found out what C-M-a through C-M-h do. 
+They are (in order from a through h): Move to the beginning of the current 
+function, move back over balanced expression, exit the recrusive edit mode, 
+move down the list, go to the end of the current function, move forward over 
+a balanced expression, and finally put a region (mark) around the whole 
+current function. When I say function in the above paragraph, I mean a Lisp 
+function.
+
+13)In more detail, the C-g keystroke quits the keyboard. What this means is 
+that it quits the running or partially typed command so that you can write 
+something new instead or fix a mistake in your command without having to 
+backspace through everything.
+
+14)Using the manual for emacs, I found that yanking is used to reinsert 
+deleted text and it is invoked using the C-y command.
+
+15)The only difference between the emacs Dired command and the ls -l command 
+is that the colorings of some of the files seems to be different. It becomes 
+from green in the ls-l command to becoming white in the emacs dired command. 
+In addition, emacs shows the total used in directory AND the total available 
+but ls-l does not show total available.

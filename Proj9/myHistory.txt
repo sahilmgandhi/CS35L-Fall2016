@@ -1,0 +1,66 @@
+    1  dpkg --get-selections | grep openssh
+    2  ls
+    3  sudo apt-get install openssh-server
+    4  sudo apt-get install openssh-client
+    5  ls
+    6  ssh-keygen
+    7  ipconfig
+    8  ifconfig
+    9  ping 10.97.85.101
+   10  ls
+   11  sudo useradd -d ~ -s kunjan
+   12  sudo useradd -d ~ -s <kunjan>
+   13  sudo useradd -d /~ -s <kunjan>
+   14* sudo useradd -d / -s kunjan
+   15  man useradd
+   16  ls
+   17  pwd
+   18  cd ..
+   19  ls
+   20  pwd
+   21  ls
+   22  cd ubuntu/
+   23  ls
+   24  mkdir kunjan
+   25  sudo useradd -d /home/ubuntu/kunjan -m kunjan
+   26  sudo useradd -d /home/kunjan -m kunjan
+   27  ls
+   28  cd ..
+   29  ls
+   30  pwd
+   31  cd ubuntu/
+   32  cd /home/kunjan
+   33  ls
+   34  cd kunjan/
+   35  ls
+   36  cd ..
+   37  rm kunjan/
+   38  rm -rf kunjan/
+   39  ls
+   40  sudo useradd -d /home/kunjan -m kunjan
+   41  sudo useradd -d /home/kunjan1 -m kunjan1
+   42  cd /home/kunjan1/
+   43  cd ..
+   44  ls
+   45  cd ubuntu/
+   46  ls
+   47  sudo passwd kunjan1
+   48  cd /home/kunjan1/
+   49  sudo mkdir .ssh
+   50  ls
+   51  ls -a
+   52  sudo chown -R kunjan1 .ssh
+   53  sudo chmod 700 .ssh
+   54  cd ~
+   55  ls
+   56  ssh-copy-id -i sahil1@10.97.85.101
+   57  ssh-add
+   58  ssh -X sahil1@10.97.85.101
+   59  man chmod
+   60  emacs /etc/ssh/sshd_config
+   61  sudo apt install emacs
+   62  emacs /etc/ssh/sshd_config
+   63  nano /etc/ssh/sshd_config
+   64  sudo nano /etc/ssh/sshd_config
+   65  cat history > myHistory.txt
+   66  history | cat  > myHistory.txt

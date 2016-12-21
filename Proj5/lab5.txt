@@ -1,0 +1,82 @@
+Sahil Gandhi
+10/24/2016
+ID: 704-598-105
+TA: Thuy Vu (Monday/wednesday 4-6 PM)
+
+
+1) Use "wget http://web.cs.ucla.edu/classes/fall16/cs35L/assign/coreutils-with-bug.tar.gz"
+to get the core-utils with the bug.
+
+2) Then unzip using "tar -xvf coreutils-with-bug.tar.gz". 
+
+3) After that, run ./configure within the unzipped directory.
+
+4) Then make the package using "make". Unfortunately the make command fails (due to to several 
+errors) so we need to patch this.
+
+5) We use "wget" to get the patch file and then use "nano coreutils.diff" to check the patch 
+content. We see that the patch states files in the form currDir/NewDir ... thus when we patch, we d
+o NOT need to strip it out with -p1 or -p2 or anything. -p0 will work properly.
+
+"patch -p0 < coreutils.diff"
+
+6) Now we can run "make" again and we can see that this time, it will run the full way through.
+
+7) Using "mkdir bugtest" we can create a new directory within the current folder, and then I ran 
+the following commands:
+
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+TZ=UTC0 ../src/ls -lt --full-time wwi-armistice now now1
+
+-rw-r--r-- 1 gandhi eeugrad 0 2054-12-17 17:28:16.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 gandhi eeugrad 0 2016-10-24 23:44:51.310100000 +0000 now1
+-rw-r--r-- 1 gandhi eeugrad 0 2016-10-24 23:44:45.178919000 +0000 now
+
+The output was nearly 2054 for the arsmstice file ... which is definitely very very wrong. Thus
+I am able to reproduce an error with the LS command.
+
+8) Now we need to modify our files since we need to fix the error ... chances are that the bug is 
+in ls.c ... which is 4000+ lines. To narrow down which particular files we see what is happenening 
+with our output ... apart from just the 2054, it appears that the sorting is not in order, so 
+perhaps the problem exists in that part of the code (wherever things are being compared or sorted).
+	-> Eventually you will find a comparison function that has a problem with it (TA's hint).
+
+Problem that will be seen is similar to problem that we see in the TAs slides with the functor 
+example -> there is an overflow/underflow problem in that example since A - (big negative number) 
+would overflow positively, while A - (big positive number) would result in underflow if A is 
+negative. 
+
+Keeping the above notes in mind, I decided to go into the src folder and use gdb to analyze 
+certain files that were going to compared. 
+
+"break get_current_time"
+"run"
+"info locals"
+"step" (stepped a few times). I saw the variable called timespec was being used to compare two times
+using the function timespec_cmp and it looked to be outputting a weird number with the current inputs.
+I decided to search the files for "timespec_cmp". I used the following command to do so: "grep -r 
+timespec_cmp". I found this function in the lib/timespec.h file, so I put a breakpoint at that place 
+so that I could see what was happening. 
+
+"break timespec_cmp"
+
+After stepping through a few times and using "info locals" to see what was happening, I see that 
+there is a problem with the statement "int diff = a.tv_sec - b.tv_sec" ... in the case that there 
+is any kind of integer overflow, then this will produce the incorrect result. That would explain 
+why the 2054 was showing up. To fix this I made the following changes: I changed the comparison f
+rom an int to a long, and then I made sure that if it overflowed, to adjust the value to a 
+non-overflow number. The changes that I made are reflected in my lab5.diff file. I used the 
+commands "emacs C-x 4 a" to add a changelog entry, and then used "diff - u" to get the diff 
+content between my version of the file and the current file.
+
+9) I tried reproducing this error in my home directory of the SEASnet linux servers by running 
+the commands seen above in step 7. Even using the ls from /usr/bin/ls, I still see the erronous 
+date that it was created in some time in 2054. This is due to the filesystem of the linux server. 
+The local file system has a 32 bit signed stamp while the SEASnet NFS filesystem has a 32 bit 
+unsigned stamp. If we instead repeat those steps in number 7 in the SEASNET file system, then we 
+would see the correct output. I tried that in my system's /tmp/ directory. In this case, the 
+output was correct, the really old file showed the appropiate date rather than some date that is 
+VERY far in the future.

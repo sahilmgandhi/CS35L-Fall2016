@@ -1,0 +1,135 @@
+Sahil Gandhi
+10/17/2016
+ID: 704-598-105
+TA: Thuy Vu -> Monday/Wednesday 4-6 PM
+
+
+1) First I used the command "git clone ~eggert/src/gnu/diffutils" to clone 
+the repo onto my local machine.
+
+2) Then I used "cd diffutils" to go into the directory and used "git log > 
+git-log.txt" to make the git-log text file.
+
+3) I used the command "git tag > git-tags.txt" to put the tags used for 
+Diffutils into the file git-tags.txt
+
+4) Next I used "nano git-log.txt" to open the log, and then used Ctrl-W to 
+search for "maint: quote". To grab just that commit out, I used the 
+following command: "git format-patch 
+62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f --stdout -1 > quote-patch.txt". 
+This stored the commit into the file quote-patch.
+
+5) To checkout the correct version of DiffUtils, I used the command " git 
+checkout v3.0 -b diffUtils3.0". 
+
+6) To patch, I used the command "patch -p1 < quote-patch.txt". It prompted 
+me for some files and all I needed to do was hit "return" and then press "y" 
+to skip over those files. The patch worked flawlessly without any errors (
+ie. I had no problem applying the patch). There were a few failed hunks, and 
+the rejected parts were saved to various files, like "README.rej" and 
+"README-hacking.rej".
+
+7) I used "git status" to check the status of the current git directory, and 
+I saw that there were several files that were needed to be stages for commit.
+
+#       modified:   NEWS
+#       modified:   README
+#       modified:   TODO
+#       modified:   doc/diagmeet.note
+#       modified:   ms/config.bat
+#       modified:   ms/config.site
+#       modified:   po/en.po
+#       modified:   src/analyze.c
+#       modified:   src/cmp.c
+#       modified:   src/context.c
+#       modified:   src/diff.c
+#       modified:   src/diff.h
+#       modified:   src/diff3.c
+#       modified:   src/dir.c
+#       modified:   src/ifdef.c
+#       modified:   src/io.c
+#       modified:   src/sdiff.c
+#       modified:   src/side.c
+#       modified:   src/system.h
+#       modified:   src/util.c
+#       modified:   tests/help-version
+
+8) To work with reverting back changes, I read up on the Emacs commands like 
+vc-diff and vc-revert and diff-apply-hunk.
+
+9) For all of the non .c files above, I opened them up in emacs, and ran the 
+command C-x v u. What this does it is it reverts files in the current VC 
+fileset to the last revision (aka undoing our changes). I ran this command 
+for the following files: NEWS, README, TODO, doc/diagmeet.note, ms/
+config.bat, ms/config.site, po/en.po, src/diff.h, src/system.h, and 
+tests/help-version.
+
+I ran git status to check that indeed these files are no longer needed to be 
+added to the stage for commit because git detects no changes in them (since 
+I reverted them). 
+
+Now for all the .c files, I opened them in emacs "emacs _fileName_" and then 
+used "C-x v =" to find the differences. Then I went through each of the 
+files and changed all the ' to a ` wherever they were in comments for the 
+files. These files were (src/analyze.c, src/cmp.c, src/context.c, src/
+diff.c, src/diff3.c, src/dir.c src/ifdef.c, src/io.c, src/sdiff.c, src/
+side.c, src/ util.c). 
+
+To speed up the process, after using "C-x v ="" to get the difference, I 
+used "C-c C-a" quickly revert all the comments that had the changed 
+character. Thus at the end I had half a dozen (6) files left in git status.
+(cmp.c, diff.c, diff3.c, dir.c, sdiff.c, util.c)
+
+10) Next I opened up the file diff.c and diff.c.rej in emacs (I used C-x o 
+to make a new buffer, and then C-x f to open the files). I went through all 
+the changes and used the command (M-% ` ') to change the ocurrences of ` to 
+' wherever needed. If it was not needed, I prssed "n" to skip over.
+I repeated this process with diff3.c and diff3.c.rej and went over each of 
+the changes that I needed to revert. 
+
+11) I typed "git status" again, and once again only those six files were 
+showing again. However there were many files in the "untracked" portion of 
+the status bar, and I do not need these. Thus I should delete them with the 
+command "rm __fileName__". I also do NOT want to remove my lab files like 
+git-log.txt and git-tags.txt and quote-patch.txt, so I copied them to 
+another folder. Alternatively, I can also do git -clean -f.
+
+12) I ran the command "git diff | wc -l" and saw that my git diff file was 
+312 lines long. Since this is between 300 and 400, I feel that it is 
+appropiate and since I followed the directions to the best of my ability, I 
+believe this should work. I used the command "git diff > 
+quote-3..0-patch.txt" to put the diff output into a new file.
+
+13) I then looked into README-hacking to  see the next instructions 
+regarding patching the file. These steps included running ./bootstrap, ./
+configure, make and make check. Thus I did the following commands ->
+
+export PATH=/usr/local/cs/bin:$PATH
+./bootstrap
+wget http://web.cs.ucla.edu/classes/fall16/cs35L/assign/diffutils-gets.diff 
+-O patch2
+patch -p0 < patch2
+./configure
+make
+make check
+
+After doing the above steps, I typed in "src/diff . -" and "src/diff --help" and saw 
+that the ascii grave character ` was changed into a ' everywhere, which is 
+exactly what we wanted.
+
+14) To check my version of the patch with the original, I ran the command 
+"cp -r diffutils/ diffutils-3.0" and "cp -r diffutils/ diffutils-3.0-patch"
+
+What this has done is create two new directories with the same code base. 
+However, I need to revert back to the older patch in the 3.0 folder, so I 
+used "git checkout v3.0" to change it to the pre-patch version.
+
+I ran the command "./diffutils/src/diff -pru diffutils-3.0 
+diffutils-3.0-patch > quote-3.0-test.txt"
+
+15) I ran the command "./diffutils/src/diff quite-3.0-test.txt 
+quote-3.0-patch.txt" and saw that there were some differences that were 
+outputted. This meant that the files were NOT identical, and after loooking 
+through the code, it appears that the differences are not innocous as the 
+strings in the code appear to be different (resulting in different behavior 
+than what we wanted in the patch).

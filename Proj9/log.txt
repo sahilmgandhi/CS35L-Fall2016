@@ -1,0 +1,66 @@
+Sahil Gandhi
+11/22/2016
+Lab: Monday/Wednesday 4-6 PM
+TA: Thuy Vu
+Partner: Kunjan Patel
+
+Step 1: Installing open SHH
+I first had to install openssh and did the following commands to get ssh and get the server/client:
+
+dpkg --get-selections | grep openssh
+sudo apt-get install openssh-server
+sudo apt-get install openssh-client
+
+Step 2: I had to generate the ssh keys for my client, and did so by typing:
+
+ssh-keygen        // The keys are saved into ∼/.ssh/is_rsa and is saved in the format id_rsa.pub)
+
+Step 3: I tried to find my IP by runing ipconfig, and then tried to ping my partner's IP address to check for validity.
+
+ipconfig              // my IP was 10.97.85.106, his was 10.97.85.101
+ping 10.97.85.101
+
+Step 4: While my partner waited, I began to create the user on my machine so that my partner could ssh into that:
+
+man useradd                               // to check the manual pages for useradd to use it properly
+sudo useradd -d /home/kunjan -m kunjan1   // created the user kunjan1
+
+cd /home/kunjan1/                         // verified that kunjan1 exists
+sudo passwd kunjan1                       // created a password for kunjan1
+
+cd /home/kunjan1/                         // go to the user I just created
+
+sudo mkdir .ssh                           // created the ssh directory and changed the ownership + permission
+sudo chown -R kunjan1 .ssh                // recursively change ownership to kunjan1
+sudo chmod 700 .ssh                       // 700 = read, write, execute
+
+Step 4: After my partner attempted to ssh, I disabled the password based authentication by running:
+
+emacs /etc/ssh/sshd_config
+
+And then changed the line "PasswordAuthentication -> yes" to being no. This way he could log in without using his 
+password next time.
+
+Step 5: Now after my partner did step 1-3 for me, I began doing some steps so I could log onto his machine with my 
+username:
+
+ssh-copy-id -i sahil1@10.97.85.101        // copied public key over the  server 
+ssh-add                                   // added the private key to ssh-agent
+
+Step 6: Now I can log on to his machine:
+
+ssh sahil1@10.97.85.101
+
+I  ran a few commands like "man chmod", and "mkdir SahilTest", and more to see that I was indeed able to log on to his 
+computer and the changes stuck. He tried going to my user, and saw that the changes were there, so we knew it was 
+successful!
+
+I then took out Kunjan's read, write, and execute permissions for my user on his computer by running:
+
+chmod o-rwwx "$HOME"
+
+Now that user was only for me!! Additionally, I also tried running it with x-forwarding, by typing the following 
+command, and also ran "firefox" to see that indeed, the firefox window popped up!:
+
+ssh -X sahil1@10.97.85.101
+firefox

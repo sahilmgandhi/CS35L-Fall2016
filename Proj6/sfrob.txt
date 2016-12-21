@@ -1,0 +1,78 @@
+Sahil Gandhi
+11/6/2016
+TA: Thuy Vu 
+Lab: Monday/Wednesday 4-6 PM
+
+1) Time differences between sfrob and sfrobu:
+
+Using the veryLargeFile.txt that I generated for the lab portion of this assignment, I tested it on both of my old 
+sfrob program as well as the new sfrobu program. 
+
+I ran the following commands: 
+"time ./sfrob < veryLargeFile.txt > sfrobTime.txt"
+
+real    0m0.263s
+user    0m0.161s
+sys     0m0.016s
+
+"time ./sfrobu < veryLargeFile.txt > sfrobuTime.txt"
+
+Comparisons: 263446
+
+real    0m7.356s
+user    0m0.312s
+sys     0m6.962s
+
+As we can see, sfrob, which uses the buffers to read the input and write out the output ran very very quickly, with 
+the system time (sys) being only .016 seconds. This is expected since the use of the buffer limits the amount of 
+system calls that have to be made. However, the time for sfrobu, the version that requires read() and write() instead 
+of the buffered versions took MUCH longer. The sys time for this one was 6.962 seconds ... and this is expected since 
+every byte, we had to make a system call for read and write. Additionally, based on our understanding and analysis of 
+tr2b and tr2u from the lab portion of this assignment, we see that the results shown here make sense, the unbuffered 
+program is far slower than the buffered version.
+
+2) Analysis of comparisons in sfrobu due to number of input lines:
+
+With the input of the veryLargeFile.txt, we see that the number of comparisons that were done was 263,446. Since we 
+know the size of this file (roughly 6 million bytes), and using wc -l, we can see that this particular file had 22,670 
+"inputs". We know that qsort is a form of quicksort, in the average case, we would require about n*log(n) 
+comparisons (with n being the number of inputs to the sort and the log being base 2). 22,670 * log(22,670)/log(2) (to 
+convert it into log base 2) gives us 328,000 sorts on average. 263,446 is pretty close to 328,000 comparisons, so this 
+analysis seems correct!
+
+Additionally, if we test on the original input (from Lab 5) of '*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS 
+#NEM\4', which has 9 input lines, we see that there were 17 comparisons done. 9 * log(9)/log(2) = 28. 17 comparisons 
+is pretty close to 28, which supports that the number of comparisons that we did is within the average case of qsort.
+
+I also did a much more robust test on sfrobu by passing in files with input sizes of 9 
+times orders of 10 (ie 9, 90, 900, 9000, 90000, 900000). 
+
+9: 17 				-> expected 9*log(9) = 28
+90: 459				-> expected 90*log(90) = 584
+900: 7372			-> expected 900*log(900) = 8832
+9000: 101780		-> expected 9000*log(9000) = 118221
+90000: 1303920 		-> expected 90000*log(90000) = 1481187
+900000: 15851056	-> expected 900000*log(900000) = 17801608
+
+All of these sorts seem to be within the expected n*log(n) average that we see. 
+
+3) Time differences between sfrobs, sfrobu, and sfrob:
+
+After seeing the time differences in sfrob and sfrobu seen in part 1, I also need to test the time for sfrobs. I 
+repeated it on the large text file, and the results shocked me:
+
+"time ./sfrobs < veryLargeFile.txt > sfrobsTime.txt"
+
+real    0m0.120s
+user    0m0.032s
+sys     0m0.036s
+
+The system time (sys) is extremely tiny and in general, it took longer than the times for sfrob.c but shorter than 
+the time for sfrobu.c. However, the "real" time was shorter for sfrobs, than it was for any of the other programs, 
+meaning that overall the sfrobs program takes much less time than the other two programs.
+
+After looking into this anomaly, I tried running the sfrobs script on files of varying lenghts, and saw that in each 
+case, the sys time was roughly the same. It seems that the sys time is independent on the size of the file, and seems 
+to just be dependent on my script (the individual commands that I have within it), and since we are using tr and sort 
+within the script, it is no surprise that sfrobs was the fastest of them all. Everything in it is highly developed and 
+optimized by the GNU community (such as the tr and sort commands) and thus it is the fastest program.

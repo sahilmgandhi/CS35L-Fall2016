@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#Find all the </td> from the input using <&0
+grep '<td>\(..*\)<\/td>' <&0 |
+
+#Removes all HTML Tags
+sed -e 's/<[^>]*>//g' |
+
+#Removes spaces and tags 
+sed 's/^[ \t]\+//g' |
+
+#Removes every 2nd line because 1st line is English
+sed '1~2d'# |
+
+#replaces ASCII grave with apostrophe
+sed 's/`/'"'"'/g' |
+
+#Converts upper case to lower
+tr '[:upper:]' '[:lower:]' |
+
+#Removes anything that is not Hawaiian characters
+tr -cs [pk\'mnwlhaeiou] '\n' |
+
+#Sorts the entire file and removes duplicate
+sort -u
